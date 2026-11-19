@@ -1,3 +1,6 @@
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
 from tests.conftest import login
@@ -32,3 +35,16 @@ def test_session_cookie_is_httponly_and_samesite_lax(client: TestClient) -> None
     cookie = resp.headers["set-cookie"].lower()
     assert "httponly" in cookie
     assert "samesite=lax" in cookie
+
+
+def test_app_refuses_to_start_without_any_users(tmp_path: Path) -> None:
+    from workboard.api import create_app
+    from workboard.config import Settings
+
+    missing = tmp_path / "nope.json"
+    with pytest.raises(RuntimeError, match=str(missing)):
+        create_app(Settings(missing, tmp_path / "w.db", "s"))
+    empty = tmp_path / "empty.json"
+    empty.write_text("[]")
+    with pytest.raises(RuntimeError, match=str(empty)):
+        create_app(Settings(empty, tmp_path / "w.db", "s"))

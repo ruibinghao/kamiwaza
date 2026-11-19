@@ -119,17 +119,21 @@ async function onDrop(event, status) {
   const id = Number(event.dataTransfer.getData("text/plain"));
   const item = state.items.find((i) => i.id === id);
   if (!item || item.status === status) return render();
+  $("board-error").hidden = true;
   try {
     await api("PATCH", `/api/items/${id}`, { status });
     await loadTeam();
   } catch (err) {
-    handleError(err);
+    handleError(err, "board-error");
+    render();
   }
 }
 
-function handleError(err) {
-  if (err instanceof AuthError) showLogin();
-  else $("item-error").textContent = err.message;
+function handleError(err, area = "item-error") {
+  if (err instanceof AuthError) return showLogin();
+  const target = $(area);
+  target.textContent = err.message;
+  target.hidden = false;
 }
 
 function openDialog(item) {

@@ -98,3 +98,9 @@ def test_other_team_cannot_write_and_item_unchanged(ann: TestClient, cy: TestCli
 def test_unauthenticated_writes_are_401(client: TestClient) -> None:
     assert client.post("/api/items", json={"title": "T"}).status_code == 401
     assert client.patch("/api/items/1", json={"status": "Planning"}).status_code == 401
+
+
+def test_patch_out_of_range_item_id_is_404_not_500(ann: TestClient) -> None:
+    resp = ann.patch("/api/items/99999999999999999999", json={"status": "Planning"})
+    assert resp.status_code == 404
+    assert ann.patch("/api/items/0", json={"status": "Planning"}).status_code == 404

@@ -17,6 +17,7 @@ from workboard.permissions import ensure_can_write
 from workboard.repository import STATUSES, Repository, WorkItem
 from workboard.users import User, UserStore
 
+MAX_ITEM_ID = 2**63 - 1  # SQLite INTEGER upper bound
 STATIC_DIR = Path(__file__).parent / "static"
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
@@ -86,6 +87,11 @@ def create_app(settings: Settings) -> FastAPI:
         A configured FastAPI app with its database schema initialised.
     """
     users = UserStore(settings.users_file)
+    if not users.teams():
+        raise RuntimeError(
+            f"No users found in {settings.users_file}. Add one with: "
+            "python -m workboard.users add <username> <team>"
+        )
     repo = Repository(settings.db_path)
     repo.init_schema()
 
@@ -130,7 +136,7 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.patch("/api/items/{item_id}")
     def update_item(item_id: int, body: ItemUpdate, user: CurrentUser) -> dict[str, Any]:
-        item = repo.get_item(item_id)
+        item = repo.get_item(item_id) if 1 <= item_id <= MAX_ITEM_ID else None
         if item is None:
             raise HTTPException(status_code=404, detail="Item not found")
         ensure_can_write(user, item.team_id)
