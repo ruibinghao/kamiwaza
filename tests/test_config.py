@@ -27,3 +27,11 @@ def test_defaults() -> None:
     settings = load_settings({"WORKBOARD_SECRET": "s"})
     assert settings.users_file == Path("data/users.json")
     assert settings.db_path == Path("data/workboard.db")
+
+
+def test_disable_password_defaults_off_and_reads_env() -> None:
+    assert load_settings({"WORKBOARD_SECRET": "s"}).disable_password_check is False
+    on = load_settings({"WORKBOARD_SECRET": "s", "WORKBOARD_DISABLE_PASSWORD": "1"})
+    assert on.disable_password_check is True
+    other = load_settings({"WORKBOARD_SECRET": "s", "WORKBOARD_DISABLE_PASSWORD": "true"})
+    assert other.disable_password_check is False

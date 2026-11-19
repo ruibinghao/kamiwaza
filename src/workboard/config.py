@@ -17,11 +17,14 @@ class Settings:
         users_file: Path to the JSON password file.
         db_path: Path to the SQLite database.
         secret_key: Secret used to sign session cookies.
+        disable_password_check: DEVELOPMENT ONLY. When true, login only needs an
+            existing username and any password is accepted.
     """
 
     users_file: Path
     db_path: Path
     secret_key: str
+    disable_password_check: bool = False
 
 
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
@@ -46,4 +49,5 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         users_file=Path(env.get("WORKBOARD_USERS_FILE", "data/users.json")),
         db_path=Path(env.get("WORKBOARD_DB", "data/workboard.db")),
         secret_key=secret,
+        disable_password_check=env.get("WORKBOARD_DISABLE_PASSWORD") == "1",
     )

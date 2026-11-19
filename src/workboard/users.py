@@ -60,17 +60,23 @@ class UserStore:
         """
         self._entries = {e["username"]: e for e in _load(path)}
 
-    def authenticate(self, username: str, password: str) -> User | None:
+    def authenticate(
+        self, username: str, password: str, verify_password: bool = True
+    ) -> User | None:
         """Check credentials.
 
         Args:
             username: Login name.
             password: Plaintext password to verify.
+            verify_password: When false (development only) the password is ignored
+                and only the username must exist.
 
         Returns:
             The user on success, otherwise ``None``.
         """
         entry = self._entries.get(username)
+        if not verify_password:
+            return User(entry["username"], entry["team"]) if entry else None
         hashed = entry["password_hash"].encode() if entry else _DUMMY_HASH
         try:
             ok = bcrypt.checkpw(password.encode(), hashed)

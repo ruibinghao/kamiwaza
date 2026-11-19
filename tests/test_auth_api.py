@@ -4,6 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from tests.conftest import login
+from workboard.config import Settings
 
 
 def test_login_success_sets_cookie_and_me_returns_identity(client: TestClient) -> None:
@@ -48,3 +49,28 @@ def test_app_refuses_to_start_without_any_users(tmp_path: Path) -> None:
     empty.write_text("[]")
     with pytest.raises(RuntimeError, match=str(empty)):
         create_app(Settings(empty, tmp_path / "w.db", "s"))
+
+
+def test_password_check_can_be_disabled_but_username_must_exist(
+    settings: Settings, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    from dataclasses import replace
+
+    from fastapi.testclient import TestClient
+
+    from workboard.api import create_app
+
+    with caplog.at_level("WARNING"):
+        app = create_app(replace(settings, disable_password_check=True))
+    assert "password" in caplog.text.lower()
+    c = TestClient(app)
+    ok = c.post("/api/login", json={"username": "ann", "password": "totally-wrong"})
+    assert ok.status_code == 200 and ok.json() == {"username": "ann", "team": "red"}
+    assert c.get("/api/me").status_code == 200
+    unknown = TestClient(app).post("/api/login", json={"username": "ghost", "password": "x"})
+    assert unknown.status_code == 401
+
+
+def test_password_check_is_enforced_by_default(client: TestClient) -> None:
+    resp = client.post("/api/login", json={"username": "ann", "password": "totally-wrong"})
+    assert resp.status_code == 401
