@@ -136,4 +136,21 @@ def create_app(settings: Settings) -> FastAPI:
             raise HTTPException(status_code=404, detail="Item not found")
         return _item_json(updated)
 
+    def known_team(team: str) -> str:
+        if team not in users.teams():
+            raise HTTPException(status_code=404, detail="Team not found")
+        return team
+
+    @app.get("/api/teams")
+    def list_teams(user: CurrentUser) -> list[str]:
+        return users.teams()
+
+    @app.get("/api/teams/{team}/items")
+    def list_items(team: str, user: CurrentUser) -> list[dict[str, Any]]:
+        return [_item_json(i) for i in repo.list_items(known_team(team))]
+
+    @app.get("/api/teams/{team}/members")
+    def list_members(team: str, user: CurrentUser) -> list[str]:
+        return users.members(known_team(team))
+
     return app
