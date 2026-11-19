@@ -1,0 +1,4 @@
+[
+  {"username": "ann", "password_hash": "REPLACE_WITH_BCRYPT_HASH_USE_THE_CLI", "team": "red"},
+  {"username": "cy", "password_hash": "REPLACE_WITH_BCRYPT_HASH_USE_THE_CLI", "team": "blue"}
+]
