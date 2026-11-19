@@ -3,16 +3,21 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+from pathlib import Path
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, StringConstraints, model_validator
 from starlette.middleware.sessions import SessionMiddleware
 
-from workboard.config import Settings
+from workboard.config import Settings, load_settings
 from workboard.permissions import ensure_can_write
 from workboard.repository import STATUSES, Repository, WorkItem
 from workboard.users import User, UserStore
+
+STATIC_DIR = Path(__file__).parent / "static"
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
 
@@ -153,4 +158,14 @@ def create_app(settings: Settings) -> FastAPI:
     def list_members(team: str, user: CurrentUser) -> list[str]:
         return users.members(known_team(team))
 
+    @app.get("/", include_in_schema=False)
+    def index() -> FileResponse:
+        return FileResponse(STATIC_DIR / "index.html")
+
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     return app
+
+
+def app_factory() -> FastAPI:
+    """Build the app from environment settings (for ``uvicorn --factory``)."""
+    return create_app(load_settings())

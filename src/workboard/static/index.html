@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Board</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <section id="login-view">
+    <form id="login-form">
+      <h1>Work Board</h1>
+      <label>Username <input id="login-username" autocomplete="username" required></label>
+      <label>Password <input id="login-password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Log in</button>
+      <p id="login-error" class="error" role="alert"></p>
+    </form>
+  </section>
+
+  <section id="board-view" hidden>
+    <header>
+      <h1>Work Board</h1>
+      <label>Team <select id="team-select"></select></label>
+      <span id="whoami"></span>
+      <button id="new-item-btn" type="button">New item</button>
+      <button id="logout-btn" type="button">Log out</button>
+    </header>
+    <p id="readonly-banner" class="banner" hidden>Read-only: you are viewing another team's board.</p>
+    <main id="board"></main>
+  </section>
+
+  <dialog id="item-dialog">
+    <form id="item-form" method="dialog">
+      <h2 id="dialog-heading"></h2>
+      <label>Title <input id="item-title" maxlength="200" required></label>
+      <label>Description <textarea id="item-description" rows="5"></textarea></label>
+      <label>Assigned to <select id="item-assignee"></select></label>
+      <label id="status-label">Status <select id="item-status"></select></label>
+      <p id="item-error" class="error" role="alert"></p>
+      <div class="actions">
+        <button id="item-save" type="submit">Save</button>
+        <button id="item-cancel" type="button">Close</button>
+      </div>
+    </form>
+  </dialog>
+  <script src="/static/app.js"></script>
+</body>
+</html>
