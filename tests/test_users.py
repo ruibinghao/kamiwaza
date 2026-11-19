@@ -75,3 +75,11 @@ def test_empty_file_treated_as_malformed(path: Path) -> None:
     path.write_text("")
     with pytest.raises(ValueError, match=str(path)):
         UserStore(path)
+
+
+def test_authenticate_without_password_check_accepts_any_password(path: Path) -> None:
+    add_user(path, "ann", "pw", "red")
+    store = UserStore(path)
+    assert store.authenticate("ann", "wrong", verify_password=False) == User("ann", "red")
+    assert store.authenticate("ann", "", verify_password=False) == User("ann", "red")
+    assert store.authenticate("ghost", "pw", verify_password=False) is None

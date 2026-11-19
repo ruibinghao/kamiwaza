@@ -29,6 +29,7 @@ with a random one per start (sessions reset on restart).
 | `WORKBOARD_SECRET` | required (unless `WORKBOARD_DEV=1`) | signs session cookies |
 | `WORKBOARD_USERS_FILE` | `data/users.json` | password file |
 | `WORKBOARD_DB` | `data/workboard.db` | SQLite database |
+| `WORKBOARD_DISABLE_PASSWORD` | off | `1` skips the password check (username must still exist). **Development only**; the server logs a warning. |
 
 ## Develop
 

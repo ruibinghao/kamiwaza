@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from dataclasses import asdict
 from pathlib import Path
 from typing import Annotated, Any
@@ -18,6 +19,7 @@ from workboard.repository import STATUSES, Repository, WorkItem
 from workboard.users import User, UserStore
 
 MAX_ITEM_ID = 2**63 - 1  # SQLite INTEGER upper bound
+logger = logging.getLogger(__name__)
 STATIC_DIR = Path(__file__).parent / "static"
 
 Title = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=200)]
@@ -92,6 +94,11 @@ def create_app(settings: Settings) -> FastAPI:
             f"No users found in {settings.users_file}. Add one with: "
             "python -m workboard.users add <username> <team>"
         )
+    if settings.disable_password_check:
+        logger.warning(
+            "WORKBOARD_DISABLE_PASSWORD is on: passwords are NOT checked. "
+            "Anyone who knows a username can log in. Development use only."
+        )
     repo = Repository(settings.db_path)
     repo.init_schema()
 
@@ -111,7 +118,9 @@ def create_app(settings: Settings) -> FastAPI:
 
     @app.post("/api/login")
     def login(body: LoginBody, request: Request) -> dict[str, str]:
-        user = users.authenticate(body.username, body.password)
+        user = users.authenticate(
+            body.username, body.password, verify_password=not settings.disable_password_check
+        )
         if user is None:
             raise HTTPException(status_code=401, detail="Invalid credentials")
         request.session["username"] = user.username
