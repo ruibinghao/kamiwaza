@@ -38,3 +38,8 @@ def test_app_factory_builds_app_from_env(tmp_path: Path, monkeypatch) -> None:  
 def test_board_has_visible_error_area_used_for_failed_moves(client: TestClient) -> None:
     assert 'id="board-error"' in client.get("/").text
     assert "board-error" in (STATIC / "app.js").read_text()
+
+
+def test_css_hidden_attribute_always_wins_over_display_rules() -> None:
+    css = (STATIC / "app.css").read_text().replace(" ", "")
+    assert "[hidden]{display:none!important;}" in css
